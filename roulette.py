@@ -4,9 +4,7 @@ import os
 import random
 import time
 import colorama
-from colorama import Fore, Back, Style
-colorama.init()
-
+from colorama import Back
 
 types = {
     "red": {
@@ -40,6 +38,12 @@ roulette_wheel = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8,
 money = 1000
 
 bets = []
+
+def clear():
+    if os.name == "nt":
+        os.system("cls")
+    else:
+        os.system("clear")
 
 def print_numbers():
     top_column = [3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36]
@@ -137,7 +141,7 @@ def roll():
     while roll < amount_of_rolls:
         roll += 1
 
-        os.system("cls")
+        clear()
         print_numbers()
         print_wheel(7)
         print("                                    ▲")
@@ -145,7 +149,7 @@ def roll():
         time.sleep(0.2)
         first_number = roulette_wheel.pop(0)
         roulette_wheel.append(first_number)
-    print(roulette_item)
+
     total_win = 0
     total_loss = 0
 
@@ -158,6 +162,8 @@ def roll():
             if roulette_item == bet.get("number"):
                 money += amount * types[bet_type]["payout"]
                 total_win += amount * types[bet_type]["payout"]
+            else:
+                total_loss += amount
                 
         elif roulette_item in type_numbers:
             money += amount * types[bet_type]["payout"]
@@ -175,11 +181,10 @@ def roll():
     elif total < 0:
         status = f'YOU LOST {-total}$\n'
 
-
 status = f'MONEY: {money}$\n'
 
 while True:
-    os.system("cls")
+    clear()
     print_numbers()
     print_wheel(7)
     print("                                    ▲")
@@ -192,10 +197,6 @@ while True:
     action = args.pop(0)
     args_amount = len(args)
 
-    print(action)
-
-    status = f'MONEY: {money}$\n'
-
     if action == "start" or action == "roll":
         if bets == []:
             status = "You have to place at least one bet!\n"
@@ -203,32 +204,57 @@ while True:
         roll()
 
     elif action == "bet":
-        if args_amount < 2:
-            status = "Usage is bet [amount] [type] (*number). \nTypes: red, black, odd, even, single. * single mode only."
+        if args_amount < 2 or args_amount > 3:
+            status = "Usage is bet [amount] [type]. \nTypes: red, black, odd, even or number less than 36, like 12."
             continue
-        if args_amount == 3 and args[1] == "single":
+
+        if args[1] not in ['red', 'black', 'odd', 'even']:
+            if args[1].isdigit():
+                if int(args[1]) > 36:
+                    status = "Usage is bet [amount] [type]. \nTypes: red, black, odd, even or number less than 36, like 12."
+                    continue
+                try:
+                    args[2] = args[1]
+                except Exception:
+                    args.append(args[1])
+                    
+                args[1] = "single"
+                pass
+            else:
+                status = "Usage is bet [amount] [type]. \nTypes: red, black, odd, even or number less than 36, like 12."
+                continue
+
+        if args_amount >= 3 and args[1] == "single":
             bets.append({
                 'type': 'single',
                 'amount': int(args[0]),
                 'number': int(args[2])
             })
+
         else:
             bets.append({
                 'type': args[1],
                 'amount': int(args[0])
             })
+
         amount = int(args[0])
         money -= int(args[0])
+
         type = args[1]
 
-        status = f'Successfully bet {amount}$ on {type}!\n'
+        if args[1] == "single":
+            number = int(args[2])
+
+            status = f'Successfully bet {amount}$ on {number}!\n'
+        else:
+            status = f'Successfully bet {amount}$ on {type}!\n'
 
     elif action == "help":
         if args_amount < 1:    
             status = "Type help [command] to see help. \nCommands: bet, start, clearbets, money, exit"
         else:
             if args[0] == "bet":
-                status = "Add a new bet. Usage is: bet [type] [amount] (number*). \nTypes: red, black, odd, even, single. * single mode only."
+                status = "Add a new bet. Usage is bet [amount] [type]. \nTypes: red, black, odd, even or number less than 36, like 12."
             elif args[0] == "start":
                 status = "Starts the game. Usage is: start."
             elif args[0] == "clearbets":
@@ -244,5 +270,3 @@ while True:
         status = "Cleared all bets.\n"
     else:
         status = "Unknown command. Type help for help.\n"
-#print(roulette_wheel)
-print(f'\n\nMONEY: {money}, NUMBER: {roulette_item}')
