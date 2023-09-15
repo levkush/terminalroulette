@@ -190,7 +190,6 @@ while True:
     print("                                    ▲")
     print(status)
     #time.sleep(0.3)
-
     command = input("TerminalRoulette > ")
 
     args = command.split(' ')
@@ -204,6 +203,20 @@ while True:
         roll()
 
     elif action == "bet":
+        try:
+            int(args[0])
+        except ValueError:
+            status = "Usage is bet [amount] [type]. \nTypes: red, black, odd, even or number less than 36, like 12."
+            continue
+
+        if money < int(args[0]):
+            status = "You don't have enough money for this bet!\n"
+            continue
+
+        if int(args[0]) < 0:
+            status = "Usage is bet [amount] [type]. \nTypes: red, black, odd, even or number less than 36, like 12."
+            continue
+
         if args_amount < 2 or args_amount > 3:
             status = "Usage is bet [amount] [type]. \nTypes: red, black, odd, even or number less than 36, like 12."
             continue
@@ -263,10 +276,15 @@ while True:
                 status = "Prints your balance. Usage is: money."
 
     elif action == "money":
+        status = f'MONEY: {money}$\n'
         continue
 
     elif action == "clearbets":
+        for bet in bets:
+            money += bet.get("amount")
+
         bets = []
+        
         status = "Cleared all bets.\n"
     else:
         status = "Unknown command. Type help for help.\n"
