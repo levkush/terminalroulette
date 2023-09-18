@@ -3,6 +3,7 @@
 import os
 import random
 import time
+
 import colorama
 from colorama import Back
 
@@ -205,7 +206,7 @@ while True:
     elif action == "bet":
         try:
             int(args[0])
-        except ValueError:
+        except:
             status = "Usage is bet [amount] [type]. \nTypes: red, black, odd, even or number less than 36, like 12."
             continue
 
@@ -286,5 +287,10 @@ while True:
         bets = []
         
         status = "Cleared all bets.\n"
+
+    elif action == "exit":
+        clear()
+        print("Exiting...")
+        break
     else:
         status = "Unknown command. Type help for help.\n"
